@@ -84,6 +84,35 @@ namespace DND.EFCoreWithNoLock.Extensions
                 return result;
             }
         }
+        
+        public static async Task<bool> AnyWithNoLockAsync<T>(this IQueryable<T> query, CancellationToken cancellationToken = default, Expression<Func<T, bool>> expression = null)
+        {
+            using (var scope = CreateTrancationAsync())
+            {
+                if (expression is not null)
+                {
+                    query = query.Where(expression);
+                }
+                var result = await query.AnyAsync(cancellationToken);
+                scope.Complete();
+                return result;
+            }
+        }
+
+        public static bool AnyWithNoLock<T>(this IQueryable<T> query, Expression<Func<T, bool>> expression = null)
+        {
+            using (var scope = CreateTrancation())
+            {
+                if (expression is not null)
+                {
+                    query = query.Where(expression);
+                }
+                var result = query.Any();
+                scope.Complete();
+                return result;
+            }
+        }
+        
         public static int CountWithNoLock<T>(this IQueryable<T> query, Expression<Func<T, bool>> expression = null)
         {
             using (var scope = CreateTrancation())
